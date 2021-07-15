@@ -84,7 +84,9 @@ def tweet_grab():
     conn = create_connection(database)
     if conn is not None:
         token= token_read(conn, app='sredreamsv1')
-    print(token)
+    headers = {'Authorization': 'Bearer ' + token}
+    response = requests.get('https://api.twitter.com/2/tweets/search/recent?query=from:PS5StockAlerts&tweet.fields=created_at&expansions=author_id&user.fields=created_at', headers=headers)
+    print(response.text)
     
     
 
