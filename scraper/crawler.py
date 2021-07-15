@@ -35,8 +35,8 @@ def create_table(conn, create_table_sql):
     except Error as e:
         print(e)
 
-def main():
-    sql_create_responses_table = """ CREATE TABLE IF NOT EXISTS projects (
+def create_sql():
+    sql_create_responses_table = """ CREATE TABLE IF NOT EXISTS tweets (
                                         tweet_id integer PRIMARY KEY,
                                         created_at text NOT NULL,
                                         body text,
@@ -56,6 +56,11 @@ def main():
         create_table(conn, sql_create_responses_table)
     else:
         print("Error! cannot create the database connection.")
+
+
+def main():
+    create_sql()
+
 
 
 if __name__ == '__main__':
