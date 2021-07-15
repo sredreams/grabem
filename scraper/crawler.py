@@ -4,12 +4,14 @@ Attributes would be text, created_at, tweet_id, link_to_store, bundle_binary, no
 """
 import requests
 import sqlite3
+import json
 from sqlite3 import Error
 
-database= (r"C:\Users\tarun\OneDrive\Documents\Projects\grabem\scraper\db\data.db")
+database = r"C:\Users\tarun\OneDrive\Documents\Projects\grabem\scraper\db\data.db"
+
 
 def create_connection(db_file):
-    """ create a database connection to the SQLite database
+    """create a database connection to the SQLite database
         specified by db_file
     :param db_file: database file
     :return: Connection object or None
@@ -23,8 +25,9 @@ def create_connection(db_file):
 
     return conn
 
+
 def create_table(conn, create_table_sql):
-    """ create a table from the create_table_sql statement
+    """create a table from the create_table_sql statement
     :param conn: Connection object
     :param create_table_sql: a CREATE TABLE statement
     :return:
@@ -34,6 +37,7 @@ def create_table(conn, create_table_sql):
         c.execute(create_table_sql)
     except Error as e:
         print(e)
+
 
 def token_read(conn, app):
     def dict_factory(cursor, row):
@@ -47,10 +51,9 @@ def token_read(conn, app):
     cur.execute("SELECT * FROM tokens")
     rows = cur.fetchall()
     for row in rows:
-        if row['app_id'] == app:
-            return row['bearer_token']
-            
-    
+        if row["app_id"] == app:
+            return row["bearer_token"]
+
 
 def create_sql():
     sql_create_responses_table = """ CREATE TABLE IF NOT EXISTS tweets (
@@ -80,17 +83,18 @@ def create_sql():
     else:
         print("Error! cannot create the database connection.")
 
+
 def tweet_grab():
     conn = create_connection(database)
     if conn is not None:
-        token= token_read(conn, app='sredreamsv1')
-    headers = {'Authorization': 'Bearer ' + token}
-    response = requests.get('https://api.twitter.com/2/tweets/search/recent?query=from:PS5StockAlerts&tweet.fields=created_at&expansions=author_id&user.fields=created_at', headers=headers)
-    print(response.text)
-    
-    
-
-
+        token = token_read(conn, app="sredreamsv1")
+    headers = {"Authorization": "Bearer " + token}
+    response = requests.get(
+        "https://api.twitter.com/2/tweets/search/recent?query=from:PS5StockAlerts&tweet.fields=created_at&expansions=author_id&user.fields=created_at",
+        headers=headers,
+    )
+    json_out = json.loads(response.text)
+    print(json.dumps(json_out, indent=2))
 
 
 def main():
@@ -98,11 +102,5 @@ def main():
     tweet_grab()
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-
-
-
-
-
