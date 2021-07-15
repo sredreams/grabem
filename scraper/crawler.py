@@ -6,7 +6,7 @@ import requests
 import sqlite3
 from sqlite3 import Error
 
-db_file= (r"C:\Users\tarun\OneDrive\Documents\Projects\grabem\scraper\db\data.db")
+database= (r"C:\Users\tarun\OneDrive\Documents\Projects\grabem\scraper\db\data.db")
 
 def create_connection(db_file):
     """ create a database connection to the SQLite database
@@ -36,7 +36,30 @@ def create_table(conn, create_table_sql):
         print(e)
 
 def main():
-    
+    sql_create_responses_table = """ CREATE TABLE IF NOT EXISTS projects (
+                                        tweet_id integer PRIMARY KEY,
+                                        created_at text NOT NULL,
+                                        body text,
+                                        link_to_store text NOT NULL,
+                                        bundle_binary text NOT NULL,
+                                        notified integer NOT NULL,
+                                        notified_time text NOT NULL,
+                                        link_hash text NOT NULL
+                                    ); """
+
+    # create a database connection
+    conn = create_connection(database)
+
+    # create tables
+    if conn is not None:
+        # create tasks table
+        create_table(conn, sql_create_responses_table)
+    else:
+        print("Error! cannot create the database connection.")
+
+
+if __name__ == '__main__':
+    main()
 
 
 
