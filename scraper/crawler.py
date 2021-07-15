@@ -35,6 +35,23 @@ def create_table(conn, create_table_sql):
     except Error as e:
         print(e)
 
+def token_read(conn, app):
+    def dict_factory(cursor, row):
+        d = {}
+        for idx, col in enumerate(cursor.description):
+            d[col[0]] = row[idx]
+        return d
+
+    conn.row_factory = dict_factory
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM tokens")
+    rows = cur.fetchall()
+    for row in rows:
+        if row['app_id'] == app:
+            return row['bearer_token']
+            
+    
+
 def create_sql():
     sql_create_responses_table = """ CREATE TABLE IF NOT EXISTS tweets (
                                         tweet_id integer PRIMARY KEY,
@@ -46,6 +63,11 @@ def create_sql():
                                         notified_time text NOT NULL,
                                         link_hash text NOT NULL
                                     ); """
+    sql_create_token_table = """ CREATE TABLE IF NOT EXISTS tokens (
+                                    platform text PRIMARY KEY,
+                                    app_id text NOT NULL,
+                                    bearer_token text NOT NULL
+                                ); """
 
     # create a database connection
     conn = create_connection(database)
@@ -54,12 +76,24 @@ def create_sql():
     if conn is not None:
         # create tasks table
         create_table(conn, sql_create_responses_table)
+        create_table(conn, sql_create_token_table)
     else:
         print("Error! cannot create the database connection.")
+
+def tweet_grab():
+    conn = create_connection(database)
+    if conn is not None:
+        token= token_read(conn, app='sredreamsv1')
+    print(token)
+    
+    
+
+
 
 
 def main():
     create_sql()
+    tweet_grab()
 
 
 
