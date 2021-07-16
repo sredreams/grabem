@@ -1,3 +1,3 @@
 """
-Notifies the app of an available product
+Notifier the app of an available product
 """
