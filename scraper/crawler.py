@@ -7,6 +7,7 @@ import sqlite3
 import json
 from sqlite3 import Error
 import hashlib
+import re
 
 database = r"C:\Users\tarun\OneDrive\Documents\Projects\grabem\scraper\db\data.db"
 relevant_tweets = []
@@ -20,18 +21,14 @@ class tweets:
         tweet_id,
         link_to_store,
         bundle_binary,
-        notified,
-        notified_time,
-        link_hash,
+        tweet_hash,
     ):
         self.body = body
         self.created_at = created_at
         self.tweet_id = tweet_id
         self.link_to_store = link_to_store
         self.bundle_binary = bundle_binary
-        self.notified = notified
-        self.notified_time = notified_time
-        self.link_hash = link_hash
+        self.tweet_hash = tweet_hash
 
 
 def create_connection(db_file):
@@ -86,9 +83,7 @@ def create_sql():
                                         body text,
                                         link_to_store text NOT NULL,
                                         bundle_binary text NOT NULL,
-                                        notified integer NOT NULL,
-                                        notified_time text NOT NULL,
-                                        link_hash text NOT NULL
+                                        tweet_hash text NOT NULL
                                     ); """
     sql_create_token_table = """ CREATE TABLE IF NOT EXISTS tokens (
                                     platform text PRIMARY KEY,
@@ -108,28 +103,85 @@ def create_sql():
         print("Error! cannot create the database connection.")
 
 
+def bundle_parse(tweet_text):
+    if "Bundle" in tweet_text:
+        return "1"
+    else:
+        return "0"
+
+
+def link_parser(tweet_text):
+    # findall() has been used
+    # with valid conditions for urls in string
+    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+    url = re.findall(regex, tweet_text)
+    # print([x[0] for x in url])
+    return [x[0] for x in url]
+
+
 def tweet_grab():
     conn = create_connection(database)
     if conn is not None:
         token = token_read(conn, app="sredreamsv1")
     headers = {"Authorization": "Bearer " + token}
     response = requests.get(
-        "https://api.twitter.com/2/tweets/search/recent?query=from:PS5StockAlerts&tweet.fields=created_at&expansions=author_id&user.fields=created_at",
+        "https://api.twitter.com/2/tweets/search/recent?query=from:PS5StockAlerts&tweet.fields=created_at&expansions=author_id&user.fields=created_at&max_results=100",
         headers=headers,
     )
     json_out = json.loads(response.text)
     dup_tweet = []
     for tweet in json_out["data"]:
-        tweet_text = (tweet["text"]).encode("utf-8")
-        tweet_hash = hashlib.sha1()
+        tweet_text = (tweet["text"]).replace("/n", " ")
+        # print(tweet_text)
+        links = link_parser(tweet_text)
+        is_bundle = bundle_parse(tweet_text)
+        tweet_text_enc = tweet_text.encode("utf-8")
+        tweet_hash = hashlib.sha1(tweet_text_enc)
         if tweet_hash not in dup_tweet:
-            dup_tweet.append(hashlib.sha1(tweet_text))
-            print(tweet["text"])
+            dup_tweet.append(tweet_hash)
+            ent = tweets(
+                tweet_text,
+                tweet["created_at"],
+                tweet["id"],
+                str(links),
+                is_bundle,
+                tweet_hash.hexdigest(),
+            )
+            relevant_tweets.append(ent)
+
+
+def write_sql(conn, collection):
+    sql = """ INSERT OR IGNORE INTO tweets(tweet_id, created_at, body, link_to_store, bundle_binary, tweet_hash)
+            VALUES(?,?,?,?,?,?) """
+    cur = conn.cursor()
+    cur.execute(sql, collection)
+    conn.commit()
+    return cur.lastrowid
 
 
 def main():
+    conn = create_connection(database)
     create_sql()
     tweet_grab()
+    for tweet in relevant_tweets:
+        tweet_id = tweet.tweet_id
+        created_at = tweet.created_at
+        body = tweet.body
+        link_to_store = tweet.link_to_store
+        bundle_binary = tweet.bundle_binary
+        tweet_hash = tweet.tweet_hash
+        tweet_entry = (
+            tweet_id,
+            created_at,
+            body,
+            link_to_store,
+            bundle_binary,
+            tweet_hash,
+        )
+        if conn is not None:
+            write_sql(conn, tweet_entry)
+        else:
+            print("Error! cannot create the database connection.")
 
 
 if __name__ == "__main__":
