@@ -1,13 +1,37 @@
 """
 Crawls through the API response and stores it in a PostGres/SQLite DB
-Attributes would be text, created_at, tweet_id, link_to_store, bundle_binary, notified, notified_time, link_hash 
+Attributes would be body, created_at, tweet_id, link_to_store, bundle_binary, notified, notified_time, link_hash 
 """
 import requests
 import sqlite3
 import json
 from sqlite3 import Error
+import hashlib
 
 database = r"C:\Users\tarun\OneDrive\Documents\Projects\grabem\scraper\db\data.db"
+relevant_tweets = []
+
+
+class tweets:
+    def __init__(
+        self,
+        body,
+        created_at,
+        tweet_id,
+        link_to_store,
+        bundle_binary,
+        notified,
+        notified_time,
+        link_hash,
+    ):
+        self.body = body
+        self.created_at = created_at
+        self.tweet_id = tweet_id
+        self.link_to_store = link_to_store
+        self.bundle_binary = bundle_binary
+        self.notified = notified
+        self.notified_time = notified_time
+        self.link_hash = link_hash
 
 
 def create_connection(db_file):
@@ -94,7 +118,13 @@ def tweet_grab():
         headers=headers,
     )
     json_out = json.loads(response.text)
-    print(json.dumps(json_out, indent=2))
+    dup_tweet = []
+    for tweet in json_out["data"]:
+        tweet_text = (tweet["text"]).encode("utf-8")
+        tweet_hash = hashlib.sha1()
+        if tweet_hash not in dup_tweet:
+            dup_tweet.append(hashlib.sha1(tweet_text))
+            print(tweet["text"])
 
 
 def main():
