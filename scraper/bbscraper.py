@@ -1,5 +1,4 @@
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -13,14 +12,6 @@ def best_buy_search(search_word):
     useragent = fake_useragent.UserAgent()
     opts = Options()
     opts.add_argument(f"-user-agent={useragent.random}")
-    # profile = webdriver.FirefoxProfile()
-    # profile.set_preference("general.useragent.override", useragent.random)
-    # profile.set_preference("dom.popup_maximum", 0)
-    # profile.set_preference("webdriver.load.strategy", "unstable")
-    # print(useragent.random)
-    # # options.add_argument("-devtools")
-
-    # driver = webdriver.Firefox(firefox_options=options, firefox_profile=profile)
     driver = webdriver.Chrome(options=opts, service_log_path=os.devnull)
     wait = WebDriverWait(driver, 20)
     driver.get("http://www.bestbuy.com")
