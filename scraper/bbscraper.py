@@ -71,6 +71,14 @@ def best_buy_search(search_word):
                     + (re.findall(r'"(.*?)"', sku_value.get_attribute("innerHTML")))[0],
                 )
                 print("Product Name--", sku_value.get_attribute("innerText"))
+                print(
+                    "Price--",
+                    (
+                        item.find_element_by_class_name(
+                            "priceView-hero-price.priceView-customer-price"
+                        ).get_attribute("innerText")
+                    ),
+                )
         except:
             print("properties not found")
         print("\n\n")
