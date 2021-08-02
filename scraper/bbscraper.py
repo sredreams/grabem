@@ -5,6 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 import fake_useragent
 import os
+import re
 import argparse
 from time import sleep
 
@@ -16,6 +17,8 @@ args = parser.parse_args()
 def best_buy_search(search_word):
     useragent = fake_useragent.UserAgent()
     opts = Options()
+    # opts.add_argument("--headless")
+
     opts.add_argument(
         f"-user-agent={'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'}"
     )
@@ -36,7 +39,7 @@ def best_buy_search(search_word):
     element = wait.until(
         EC.visibility_of_element_located((By.CSS_SELECTOR, "#gh-search-input"))
     )
-    sleep(5)
+    sleep(2)
     element.send_keys(search_word)
     (
         wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "header-search-button")))
@@ -45,13 +48,6 @@ def best_buy_search(search_word):
     items = product_list.find_elements_by_class_name("sku-item")
     for item in items:
         try:
-            # print(
-            #     (
-            #         item.find_element_by_xpath(
-            #             "//*[contains(@id, 'add-to-cart-button')]"
-            #         ).get_attribute("innerText")
-            #     )
-            # )
             print(
                 "Product Status--",
                 (
@@ -69,10 +65,15 @@ def best_buy_search(search_word):
                 ).get_attribute("innerText")
             ) == "Add to Cart":
                 sku_value = item.find_element_by_class_name("sku-header")
-                print("siteurl--", sku_value.get_attribute("innerHTML"))
+                print(
+                    "siteurl--",
+                    "www.bestbuy.com"
+                    + (re.findall(r'"(.*?)"', sku_value.get_attribute("innerHTML")))[0],
+                )
                 print("Product Name--", sku_value.get_attribute("innerText"))
         except:
             print("properties not found")
+        print("\n\n")
     driver.quit()
 
 
