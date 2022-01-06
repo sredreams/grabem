@@ -1,5 +1,5 @@
 """
-Crawls through the Tweeter API responses for PS5 alerts and stores it in a PostGres/SQLite DB 
+Crawls through the Twitter API responses for PS5 alerts and stores it in a PostGres/SQLite DB 
 with body, created_at, tweet_id, link_to_store, bundle_binary, notified, notified_time, link_hash 
 """
 import requests
