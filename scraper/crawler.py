@@ -1,6 +1,6 @@
 """
-Crawls through the API response and stores it in a PostGres/SQLite DB
-Attributes would be body, created_at, tweet_id, link_to_store, bundle_binary, notified, notified_time, link_hash 
+Crawls through the Tweeter API responses for PS5 alerts and stores it in a PostGres/SQLite DB 
+with body, created_at, tweet_id, link_to_store, bundle_binary, notified, notified_time, link_hash 
 """
 import requests
 import sqlite3
@@ -14,6 +14,10 @@ relevant_tweets = []
 
 
 class tweets:
+    """
+    Initialized a class to store the info returned from the APIs
+    """
+
     def __init__(
         self,
         body,
@@ -111,8 +115,7 @@ def bundle_parse(tweet_text):
 
 
 def link_parser(tweet_text):
-    # findall() has been used
-    # with valid conditions for urls in string
+    """findall() has been used with valid conditions for urls in string"""
     regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
     url = re.findall(regex, tweet_text)
     # print([x[0] for x in url])
@@ -120,6 +123,7 @@ def link_parser(tweet_text):
 
 
 def tweet_grab():
+    """Makes a call to twitter APIs and gets the all the relevant tweets"""
     conn = create_connection(database)
     if conn is not None:
         token = token_read(conn, app="sredreamsv1")

@@ -1,23 +1,21 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as EC, wait
 from selenium.webdriver.common.by import By
-import fake_useragent
 import os
 import re
-import argparse
 from time import sleep
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--product", help="Product Name")
-args = parser.parse_args()
+# Need to add input string validation here for search word
 
 
 def best_buy_search(search_word):
-    useragent = fake_useragent.UserAgent()
+    """
+    Searches for the product passed as an search word and prints the status and prices.
+    """
     opts = Options()
-    # opts.add_argument("--headless")
+    # opts.add_argument("--headless") # Commented out for debugging
 
     opts.add_argument(
         f"-user-agent={'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'}"
@@ -46,7 +44,9 @@ def best_buy_search(search_word):
     ).click()
     product_list = driver.find_element_by_class_name("sku-item-list")
     items = product_list.find_elements_by_class_name("sku-item")
-    for item in items:
+    for (
+        item
+    ) in items:  # the print will be replaced with return once done with debugging.
         try:
             print(
                 "Product Status--",
@@ -85,4 +85,32 @@ def best_buy_search(search_word):
     driver.quit()
 
 
-best_buy_search(search_word=args.product)
+def walmart_search(search_word):
+    """
+    Crawls through the wallmart website looking for the search_word
+    which is the product name in this case. This function is not fully functional yet.
+    """
+    opts = Options()
+    # opts.add_argument("--headless") # Commented out for debugging
+    opts.add_argument(
+        f"-user-agent={'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'}"
+    )
+    driver = webdriver.Chrome(options=opts, service_log_path=os.devnull)
+    wait = WebDriverWait(driver, 20)
+    driver.get("https://www.walmart.com")
+    element = wait.until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "#global-search-input"))
+    )
+    element.send_keys(search_word)
+    (wait.until(EC.element_to_be_clickable((By.ID, "global-search-submit")))).click()
+    wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "arrange-fill")))
+    items = driver.find_elements_by_class_name("arrange-fill")
+    for item in items:  # not-iterable returns bunch of child divs
+        try:
+            print(
+                item.find_element_by_xpath(
+                    '//*[@id="searchProductResult"]/div/div[2]/div/div/div[2]/div[2]/div[1]/div[2]/a'
+                )
+            )
+        except:
+            print("properties not found")
