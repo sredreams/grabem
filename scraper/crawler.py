@@ -5,11 +5,10 @@ with body, created_at, tweet_id, link_to_store, bundle_binary, notified, notifie
 import requests
 import sqlite3
 import json
-from sqlite3 import Error
 import hashlib
 import re
 
-database = r"C:\Users\tarun\OneDrive\Documents\Projects\grabem\scraper\db\data.db"
+database = r"C:\Users\tarun\OneDrive\Documents\Projects\grabem\scraper\db\data.db"  # replace it with relative path, once done debuging
 relevant_tweets = []
 
 
@@ -45,7 +44,7 @@ def create_connection(db_file):
     try:
         conn = sqlite3.connect(db_file)
         return conn
-    except Error as e:
+    except sqlite3.Error as e:
         print(e)
 
     return conn
@@ -60,7 +59,7 @@ def create_table(conn, create_table_sql):
     try:
         c = conn.cursor()
         c.execute(create_table_sql)
-    except Error as e:
+    except sqlite3.Error as e:
         print(e)
 
 
