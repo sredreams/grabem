@@ -10,15 +10,15 @@ import re
 from logger import setup_custom_logger
 import os, sys
 
-cwd = os.getcwd()
+script_path = os.path.dirname(__file__)
 log = setup_custom_logger(__file__)
 relevant_tweets = []
 try:
-    os.makedirs(os.path.join(cwd, "db"))
+    os.makedirs(os.path.join(script_path, "db"))
 except FileExistsError:
     pass
 
-database = os.path.join(cwd, "db", "data.db")
+database = os.path.join(script_path, "db", "data.db")
 
 
 class Tweets:
@@ -132,7 +132,9 @@ def bundle_parse(tweet_text):
 
 
 def link_parser(tweet_text):
-    """findall() has been used with valid conditions for urls in string"""
+    """
+    findall() has been used with valid conditions for urls in string
+    """
     regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
     url = re.findall(regex, tweet_text)
     # print([x[0] for x in url])
@@ -140,7 +142,9 @@ def link_parser(tweet_text):
 
 
 def tweet_grab():
-    """Makes a call to twitter APIs and gets the all the relevant tweets"""
+    """
+    Makes a call to twitter APIs and gets the all the relevant tweets
+    """
     conn = create_connection(database)
     if conn is not None:
         token = token_read(conn, app="twitter")
@@ -161,7 +165,6 @@ def tweet_grab():
     dup_tweet = []
     for tweet in json_out["data"]:
         tweet_text = (tweet["text"]).replace("/n", " ")
-        # print(tweet_text)
         links = link_parser(tweet_text)
         is_bundle = bundle_parse(tweet_text)
         tweet_text_enc = tweet_text.encode("utf-8")
@@ -203,8 +206,6 @@ def main():
         )
         if conn is not None:
             write_sql(conn, tweet_entry)
-        else:
-            print("Error! cannot create the database connection.")
 
 
 if __name__ == "__main__":
