@@ -112,6 +112,3 @@ def walmart_search(search_word):
             return walmart_product
         except Exception as err:
             log.error(f"Walmart scrapper errored out with error: {err}")
-
-
-best_buy_search(search_word="PS5")
