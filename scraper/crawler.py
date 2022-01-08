@@ -7,12 +7,21 @@ import sqlite3
 import json
 import hashlib
 import re
+from logger import setup_custom_logger
+import os, sys
 
-database = r"C:\Users\tarun\OneDrive\Documents\Projects\grabem\scraper\db\data.db"  # replace it with relative path, once done debuging
+cwd = os.getcwd()
+log = setup_custom_logger(__file__)
 relevant_tweets = []
+try:
+    os.makedirs(os.path.join(cwd, "db"))
+except FileExistsError:
+    pass
+
+database = os.path.join(cwd, "db", "data.db")
 
 
-class tweets:
+class Tweets:
     """
     Initialized a class to store the info returned from the APIs
     """
@@ -44,10 +53,9 @@ def create_connection(db_file):
     try:
         conn = sqlite3.connect(db_file)
         return conn
-    except sqlite3.Error as e:
-        print(e)
-
-    return conn
+    except sqlite3.Error as err:
+        log.error(f"The connection to the db failed: {err}")
+        raise
 
 
 def create_table(conn, create_table_sql):
@@ -59,8 +67,9 @@ def create_table(conn, create_table_sql):
     try:
         c = conn.cursor()
         c.execute(create_table_sql)
-    except sqlite3.Error as e:
-        print(e)
+    except sqlite3.Error as err:
+        log.error(f"create_table errored out: {err}")
+        raise
 
 
 def token_read(conn, app):
@@ -75,8 +84,16 @@ def token_read(conn, app):
     cur.execute("SELECT * FROM tokens")
     rows = cur.fetchall()
     for row in rows:
-        if row["app_id"] == app:
-            return row["bearer_token"]
+        try:
+            if row["platform"] == app:
+                return row["bearer_token"]
+            else:
+                log.info(f"No macthing token found for {app} in database tokens table")
+        except Exception as err:
+            log.error(
+                f"{err} please store a auth token in the database for {app} API access"
+            )
+            raise
 
 
 def create_sql():
@@ -98,12 +115,13 @@ def create_sql():
     conn = create_connection(database)
 
     # create tables
-    if conn is not None:
-        # create tasks table
-        create_table(conn, sql_create_responses_table)
-        create_table(conn, sql_create_token_table)
-    else:
-        print("Error! cannot create the database connection.")
+    try:
+        if conn is not None:
+            # create tasks table
+            create_table(conn, sql_create_responses_table)
+            create_table(conn, sql_create_token_table)
+    except Exception as err:
+        log.error(f"Creation of sql returned: {err}")
 
 
 def bundle_parse(tweet_text):
@@ -125,12 +143,20 @@ def tweet_grab():
     """Makes a call to twitter APIs and gets the all the relevant tweets"""
     conn = create_connection(database)
     if conn is not None:
-        token = token_read(conn, app="sredreamsv1")
-    headers = {"Authorization": "Bearer " + token}
-    response = requests.get(
-        "https://api.twitter.com/2/tweets/search/recent?query=from:PS5StockAlerts&tweet.fields=created_at&expansions=author_id&user.fields=created_at&max_results=100",
-        headers=headers,
-    )
+        token = token_read(conn, app="twitter")
+    try:
+        headers = {"Authorization": "Bearer " + token}
+    except Exception as err:
+        log.error(f"No token found for Twitter: error: {err}")
+        raise
+    try:
+        response = requests.get(
+            "https://api.twitter.com/2/tweets/search/recent?query=from:PS5StockAlerts&tweet.fields=created_at&expansions=author_id&user.fields=created_at&max_results=100",
+            headers=headers,
+        )
+    except Exception as err:
+        log.error(f"Failed to make a request to twitter APIs: {err}")
+        raise
     json_out = json.loads(response.text)
     dup_tweet = []
     for tweet in json_out["data"]:
@@ -142,7 +168,7 @@ def tweet_grab():
         tweet_hash = hashlib.sha1(tweet_text_enc)
         if tweet_hash not in dup_tweet:
             dup_tweet.append(tweet_hash)
-            ent = tweets(
+            ent = Tweets(
                 tweet_text,
                 tweet["created_at"],
                 tweet["id"],
@@ -167,19 +193,13 @@ def main():
     create_sql()
     tweet_grab()
     for tweet in relevant_tweets:
-        tweet_id = tweet.tweet_id
-        created_at = tweet.created_at
-        body = tweet.body
-        link_to_store = tweet.link_to_store
-        bundle_binary = tweet.bundle_binary
-        tweet_hash = tweet.tweet_hash
         tweet_entry = (
-            tweet_id,
-            created_at,
-            body,
-            link_to_store,
-            bundle_binary,
-            tweet_hash,
+            tweet.tweet_id,
+            tweet.created_at,
+            tweet.body,
+            tweet.link_to_store,
+            tweet.bundle_binary,
+            tweet.tweet_hash,
         )
         if conn is not None:
             write_sql(conn, tweet_entry)
