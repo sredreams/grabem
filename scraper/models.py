@@ -1,5 +1,6 @@
 from sqlalchemy import Column
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql.expression import null
 from sqlalchemy.sql.sqltypes import Boolean, Integer, String, Text, Boolean
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -11,7 +12,7 @@ Base = declarative_base()
 class Tweet(Base):
     __tablename__ = "tweets"
 
-    tweet_id = Column(Integer(20), primary_key=True)
+    tweet_id = Column(Integer, primary_key=True)
     created_at = Column(String(20), nullable=False)
     body = Column(Text)
     link_to_store = Column(String(200), nullable=False)
@@ -32,7 +33,7 @@ class Tweet(Base):
 class Bestbuy(Base):
     __tablename__ = "best_buy_products"
 
-    product_id = Column(Integer(10), primary_key=True)
+    product_id = Column(Integer, primary_key=True)
     product_name = Column(String(200), nullable=False)
     product_status = Column(String(200), nullable=False)
     product_url = Column(String(200), nullable=False)
@@ -52,5 +53,5 @@ class Token(Base):
     __tablename__ = "tokens"
 
     platform = Column(String(50), primary_key=True)
-    app_id = Column(String(50))
-    bearer_token = Column(String(200))
+    app_id = Column(String(50), nullable=False)
+    bearer_token = Column(String(200), nullable=False)
