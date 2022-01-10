@@ -6,20 +6,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from logger import setup_custom_logger
 import requests, json, hashlib, re, os
-from models import Tweet, Token, Base
+from models import Tweet, Token, Base, engine, db_session
 
 
 script_path = os.path.dirname(__file__)
 log = setup_custom_logger(__file__)
 relevant_tweets = []
-
-
-engine = create_engine(
-    "sqlite:///database.db"
-)  # Please replace it with a db connection suitable for your environment, read https://docs.sqlalchemy.org/en/14/core/engines.html for more info
 Base.metadata.create_all(bind=engine)
-db_session = sessionmaker(bind=engine)
-db_session = db_session()
 
 
 def token_read(app):

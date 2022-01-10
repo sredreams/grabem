@@ -10,20 +10,14 @@ from selenium.webdriver.common.by import By
 import os, re
 from time import sleep
 from logger import setup_custom_logger
-from models import Bestbuy, Base
+from models import Bestbuy, Base, engine, db_session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 
 log = setup_custom_logger(__file__)
 bb_products = []
-
-engine = create_engine(
-    "sqlite:///database.db"
-)  # Please replace it with a db connection suitable for your environment, read https://docs.sqlalchemy.org/en/14/core/engines.html for more info
 Base.metadata.create_all(bind=engine)
-db_session = sessionmaker(bind=engine)
-db_session = db_session()
 
 
 def best_buy_search(search_product):

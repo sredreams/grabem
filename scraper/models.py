@@ -7,6 +7,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
+engine = create_engine(
+    "sqlite:///database.db"
+)  # Please replace it with a db connection suitable for your environment, read https://docs.sqlalchemy.org/en/14/core/engines.html for more info
+db_session = sessionmaker(bind=engine)
+db_session = db_session()
 
 
 class Tweet(Base):
