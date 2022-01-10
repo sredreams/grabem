@@ -11,7 +11,7 @@ Base = declarative_base()
 class Tweet(Base):
     __tablename__ = "tweets"
 
-    tweet_id = Column(Integer, primary_key=True)
+    tweet_id = Column(Integer(20), primary_key=True)
     created_at = Column(String(20), nullable=False)
     body = Column(Text)
     link_to_store = Column(String(200), nullable=False)
@@ -33,7 +33,7 @@ class Bestbuy(Base):
     __tablename__ = "best_buy_products"
 
     product_id = Column(Integer(10), primary_key=True)
-    product_name = Column(String(200), primary_key=True)
+    product_name = Column(String(200), nullable=False)
     product_status = Column(String(200), nullable=False)
     product_url = Column(String(200), nullable=False)
     product_price = Column(String(20), nullable=False)
