@@ -1,11 +1,16 @@
 # grabem
 A project to crawl internet for items that are scarce and help users buy them
-Currently only scopped/targeted towards PS5 but plans are to expand it beyond PS5
+Please note this is a work in progress with only few scrappers working such as the bb_scraper.py for BestBuy, which can search for any products availability and ps5_twitter_alert.py for tweet alerts indicative of PS5 being available on PS5StockAlerts account.
 
 The project has the following structure:
-- scraper/bbscrapper.py: Hold the modules for crawling different online shopping websites. Currently under bbscrapper.py we have functions that are intended to crawl BestBuy and Walmart.
-- scrapper/crawler.py: This is currently scoped to scrape for tweets from PS5Alerts and looks for patterns that are indicative of a PS5 being available. This will be expanded to other products as well
+- scraper/bb_scrapper.py: Hold the modules for crawling BestBuy and looking for search_product keyword. All the products that are available are returned and store in best_buy_products table of SQLlite DB
+    - bb_scrapper.py requirements:
+        - Download chrome webdriver for the version of chrome you are running on the machine and add it to your path
+-scrapper/models.py: Contains the db models
+- scrapper/ps5_twitter_alert.py: This is currently scoped to scrape for tweets from PS5Alerts and looks for patterns that are indicative of a PS5 being available. All the returned tweets that have the urls of sites where ps5 is available is stored in tweets table of SQLlite DB
+    - ps5_twitter.py requirements:
+        - you will need a token created from twitter developer console. Please store this token in a row against DBs tokens table with columns platform="twitter", app_id="test", bearer_token=<your_token_here>
 - scrapper/db_parser.py: This will contain the code to go through all the entries in the DB and look for trigger word (product name) and return the website or source indicative of it's availability
 - notifier.py: In version1, we intend to send out sms based notification with plans to soon move to a push based notification using a mobile app
-- webserver/app.py: Still in progress, this will be used to run the app that can continuously monitor the db an serve the page for the mobile app (version2)
+- webserver/app.py: Still in progress, this will be used to run the app that can continuously monitor the availability of products and serve the page for the mobile app (version2)
 
