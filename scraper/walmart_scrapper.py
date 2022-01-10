@@ -1,5 +1,5 @@
 """
-Work in progress
+Work in progress...
 Walmart scrapper to look for products
 """
 from selenium import webdriver
