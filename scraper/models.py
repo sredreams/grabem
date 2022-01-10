@@ -32,15 +32,11 @@ class Tweet(Base):
 class Bestbuy(Base):
     __tablename__ = "best_buy_products"
 
-    # product_name = Column(String(200), primary_key=True)
-    # product_status = Column(String(200), nullable=False)
-    # product_url = Column(Text, nullable=False)
-    # product_price = Column(String(500), nullable=False)
-    product_id = Column(Text, primary_key=True)
-    product_name = Column(Text)
-    product_status = Column(Text)
-    product_url = Column(Text)
-    product_price = Column(Text)
+    product_id = Column(Integer(10), primary_key=True)
+    product_name = Column(String(200), primary_key=True)
+    product_status = Column(String(200), nullable=False)
+    product_url = Column(String(200), nullable=False)
+    product_price = Column(String(20), nullable=False)
 
     def __init__(
         self, product_id, product_name, product_status, product_url, product_price
