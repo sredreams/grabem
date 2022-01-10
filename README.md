@@ -14,3 +14,5 @@ The project has the following structure:
 - notifier.py: In version1, we intend to send out sms based notification with plans to soon move to a push based notification using a mobile app
 - webserver/app.py: Still in progress, this will be used to run the app that can continuously monitor the availability of products and serve the page for the mobile app (version2)
 
+Virtual Environment:
+One can use conda environement and build the vir env by running 'conda env create -f environment.yml' using the environment.yml in this repository
