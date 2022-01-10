@@ -11,20 +11,20 @@ import os, re
 from time import sleep
 from logger import setup_custom_logger
 from models import Bestbuy, Base, engine, db_session
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 
-log = setup_custom_logger(__file__)
+log = setup_custom_logger(__file__)  # Initialize the logger for this module
 bb_products = []
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)  # Creates the tables in the DB if not existing
 
 
 def best_buy_search(search_product):
     """
-    Searches for the product passed as an search_product and prints the status and prices.
+    Searches for the product passed as an search_product and returns the availability, url and prices of the product
+    Finally stores it in the SQLlite DB
     """
     opts = Options()
+    # opts.add_argument("--headless") # Comment out for debugging
     opts.add_argument(
         f"-user-agent={'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36'}"
     )
@@ -36,10 +36,10 @@ def best_buy_search(search_product):
     wait = WebDriverWait(driver, 20)
     driver.get("http://www.bestbuy.com")
 
-    """
-    Closes the landing banners on the bestbuy.com website to get to search box
-    """
     try:
+        """
+        Closes the landing banners on the bestbuy.com website to get to search box
+        """
         element = wait.until(
             EC.element_to_be_clickable(
                 (
@@ -53,6 +53,9 @@ def best_buy_search(search_product):
         log.warning(f"No banner showed up on bestbuy.com landing page: {war}")
 
     try:
+        """
+        Enters the search string into the search bar of Best Buy website
+        """
         element = wait.until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, "#gh-search-input"))
         )
@@ -69,6 +72,9 @@ def best_buy_search(search_product):
         raise
 
     try:
+        """
+        Stores all the results returned into items iterable
+        """
         items = driver.find_elements_by_class_name("sku-item")
     except Exception as err:
         log.error(f"couldn't build the product items list: {err}")
@@ -76,6 +82,9 @@ def best_buy_search(search_product):
         raise
     for item in items:
         try:
+            """
+            Determines id the product is available and collects all other info to store in the DB
+            """
             product_status = item.find_element_by_class_name(
                 "add-to-cart-button"
             ).get_attribute("innerText")
@@ -95,7 +104,6 @@ def best_buy_search(search_product):
                 product_price = item.find_element_by_class_name(
                     "priceView-hero-price.priceView-customer-price"
                 ).get_attribute("innerText")
-                # print(sku_unique, product_name, product_url, product_price)
                 product_data = [
                     str(sku_unique),
                     str(product_name),
@@ -118,8 +126,17 @@ def best_buy_search(search_product):
     driver.quit()
 
 
+"""
+Sample execution:
+This module is a piece of a larger project. 
+Code below is used to run this module stand alone, if required
+"""
+
+
 def main():
-    best_buy_search("Sony Bravia")
+    best_buy_search(
+        search_product="Sony Bravia"
+    )  # replace "Sony Bravia" with whatever product you want to search for
 
 
 if __name__ == "__main__":

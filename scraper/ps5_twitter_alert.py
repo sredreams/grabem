@@ -2,8 +2,6 @@
 Makes a Twitter search API call and stores responses for PS5 alerts in a SQLite DB 
 using Tweet db model in models.py
 """
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from logger import setup_custom_logger
 import requests, json, hashlib, re, os
 from models import Tweet, Token, Base, engine, db_session
